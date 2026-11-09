@@ -1,0 +1,36 @@
+# Ambiente e configuracoes locais
+.env
+.env.*
+!.env.example
+
+# Runtime e ferramentas temporarias locais
+/.runtime/
+
+# Dependencias e caches
+/vendor/
+/node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
+.cache/
+
+# Logs e arquivos temporarios
+*.log
+*.tmp
+*.bak
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*~

@@ -1,0 +1,149 @@
+{
+  "slug": "poc-better-jump-game-feel",
+  "title": "Experimentos de Game Feel: tolerância de salto e validação de contratos na Godot 4.7.2",
+  "excerpt": "Descubra como o Coiote do Papa-Léguas e a paciência de um garçom explicam o Game Feel de plataforma: bastidores da POC Better Jump, o componente Coyote Time e 53 testes automatizados na Godot 4.7.2 Stable.",
+  "description": "Entenda como criamos a POC Better Jump e o componente Coyote Time na Godot 4.7.2: analogias divertidas de game feel, GIFs da cena de teste e 53 verificações automatizadas.",
+  "category": "gameplay-studio",
+  "date": "2026-11-06",
+  "status": "published",
+  "author": "GDForge",
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Você com certeza já passou por isso: está jogando um jogo de plataforma desafiador, corre até a beiradinha de um penhasco, aperta o botão de pulo com convicção e... o personagem despenca direto no abismo. A reação imediata é de pura indignação: 'Mas eu apertei a tempo!'. Matematicamente, a física do jogo estava certa: você apertou o botão um único milissegundo depois de o personagem sair do chão. Mas para as mãos e para o cérebro humano, a sensação foi de controle duro, travado e injusto."
+    },
+    {
+      "type": "paragraph",
+      "text": "É nessa fronteira entre a frieza dos números da engine e a sensação gostosa de controle nas mãos que mora o Game Feel. Criar uma física realista é fácil; fazer o controle parecer intuitivo e divertido exige pequenos truques de empatia pelo jogador."
+    },
+    {
+      "type": "quote",
+      "text": "Nota de laboratório: este artigo registra experimentos internos de pesquisa do GDForge Gameplay Studio na bancada da Godot 4.7.2 Stable. O projeto está em fase de protótipo de bancada — nada aqui representa produto final à venda, preço ou licença comercial."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "O que é Coyote Time? A lição dos desenhos animados"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lembra daqueles desenhos clássicos do Papa-Léguas, da turma do Looney Tunes? O Coiote sempre perseguia o pássaro a toda velocidade, passava direto da beirada do desfiladeiro, continuava correndo no ar por alguns instantes e só despencava no momento em que olhava para baixo e percebia que não tinha mais chão. É dessa piada clássica da animação que vem o termo Coyote Time!"
+    },
+    {
+      "type": "paragraph",
+      "text": "Nos videogames, o Coyote Time é uma pequena janela invisível de tolerância — uma fração de segundo logo após deixar uma plataforma em que o jogo ainda permite que o personagem salte, como se ainda estivesse pisando em terra firme. A talentosa equipe de Celeste citou publicamente o Coyote Time e o Jump Buffer como parte essencial da alma do game feel do jogo (e frisou com humildade que não inventou a técnica). O jogador quase nunca percebe que o jogo foi generoso com ele; ele simplesmente sente que o controle respondeu na hora certa."
+    },
+    {
+      "type": "image",
+      "src": "/assets/images/devlog/coyote-time-demo.gif",
+      "alt": "Demonstração do Coyote Time na Godot 4.7.2 Stable",
+      "caption": "Coyote Time na bancada: com a mecânica ligada (ON), o salto é executado no ar após deixar a borda (HUD marca pulo salvo). Ao desligar (tecla 1), o personagem cai direto no vão."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Jump Buffer: a gentileza do garçom atencioso"
+    },
+    {
+      "type": "paragraph",
+      "text": "Outro grande pesadelo de quem cria jogos de plataforma é o famigerado 'input comido'. Imagine que você está caindo em direção ao chão e já aperta o botão de pulo para saltar no milissegundo em que aterrissar. Em uma programação ingênua, a engine verifica se o herói está no chão; como ele ainda está a três pixels de altura, o comando é sumariamente ignorado e você aterrissa plantado como uma estátua."
+    },
+    {
+      "type": "paragraph",
+      "text": "A solução para isso é o Jump Buffer. Pense nele como um restaurante movimentado com um garçom atencioso: em vez de esperar a mesa estar livre para só então poder chamar o garçom, você já anota o seu pedido na entrada. Assim que a mesa libera, o garçom traz o prato imediatamente! No jogo é a mesma coisa: se você apertar o pulo instantes antes de pousar, o Jump Buffer anota a intenção na comanda e dispara o salto automaticamente no primeiríssimo frame em que os pés tocam o solo."
+    },
+    {
+      "type": "image",
+      "src": "/assets/images/devlog/jump-buffer-demo.gif",
+      "alt": "Demonstração do Jump Buffer salvando o comando de salto antes da aterrissagem",
+      "caption": "Jump Buffer em ação: a intenção de salto é capturada antecipadamente enquanto o personagem ainda cai (barra ciano) e o pulo é liberado no instante do contato."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Pulo Variável e o 'peso' do controle: a POC Better Jump (Marco M01)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Para reunir esses conceitos em um só lugar, criamos a POC Better Jump (Marco M01). Trata-se de uma cena completa em CharacterBody2D onde podemos testar em tempo real as quatro grandes técnicas de controle: Coyote Time, Jump Buffer, Pulo Variável e Aceleração com Atrito."
+    },
+    {
+      "type": "paragraph",
+      "text": "O Pulo Variável é aquela sensação clássica consagrada em jogos de plataforma estilo Mario: se você apenas der um toque rápido no botão, o personagem faz um pulinho curto de reconhecimento; se segurar o botão com vontade, ele sobe bem mais alto. Já a aceleração e o atrito dão o 'peso' ao herói — a diferença física entre a sensação de deslizar no sabão ou de ter tração sob os pés."
+    },
+    {
+      "type": "paragraph",
+      "text": "Na nossa bancada na Godot 4.7.2 Stable, criamos um painel de parâmetros ao vivo com sliders e teclas de atalho (1 a 4). Assim, podemos desligar o Coyote Time, aumentar a força do pulo ou alterar o atrito sem precisar recompilar ou reiniciar o jogo nem uma vez. As medições reais no nosso laboratório mostram isso com precisão: um toque rápido resulta em um salto de cerca de 29 pixels, enquanto segurar o botão eleva o pulo para cerca de 95 pixels."
+    },
+    {
+      "type": "image",
+      "src": "/assets/images/devlog/better-jump-variable.gif",
+      "alt": "Demonstração do Pulo Variável com medição de altura ao vivo",
+      "caption": "Pulo Variável na POC: medições ao vivo no HUD confirmam a diferença entre o toque rápido (29 px) e o pulo mantido pressionado (95 px com marcador amarelo no ápice)."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "O componente GDForge Coyote Time (SR-001) e a honestidade técnica"
+    },
+    {
+      "type": "paragraph",
+      "text": "Para quem está desenvolvendo sozinho e não quer reinventar a roda ou quebrar a cabeça calculando timers manuais em código espaguete, o benefício prático do componente SR-001 Coyote Time é imediato: o nó GDForgeCoyoteTime já nasce como um filho dedicado do seu jogador, com a janela de 0,12 segundos já calibrada para a sensação ideal de controle e ajuste fácil por slider."
+    },
+    {
+      "type": "paragraph",
+      "text": "Além disso, o nó emite três sinais prontinhos para enriquecer o visual do jogo sem você precisar mexer no código interno da mecânica:"
+    },
+    {
+      "type": "list",
+      "items": [
+        "window_opened: avisa quando a janela de tolerância começou logo após cruzar a borda.",
+        "window_consumed: disparado quando o jogador aciona o pulo durante o tempo extra (perfeito para tocar um som especial, levantar poeirinha ou somar no placar de 'pulos salvos').",
+        "window_expired: emitido se a janela se encerrou sem que o pulo fosse acionado."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Agora, uma ressalva muito honesta e transparente: nesta primeira versão (v0.1.0), isso ainda NÃO é uma mágica 'sem código' onde você apenas arrasta o nó e tudo funciona por telepatia. O script do seu CharacterBody2D ainda precisa chamar explicitamente duas funções: update() no ciclo de física para atualizar o relógio interno e consume() quando for efetuar o salto. Um adaptador 100% plug-and-play sem tocar em código está planejado para o futuro, mas hoje essas duas linhas continuam necessárias. Além disso, nesta etapa, o Jump Buffer e o Pulo Variável ainda vivem dentro da cena da POC e serão desacoplados nas próximas entregas."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Prova de estabilidade: 53 verificações automatizadas na Godot 4.7.2"
+    },
+    {
+      "type": "paragraph",
+      "text": "Quem nunca baixou um plugin promissor na internet e descobriu, três dias depois, que a documentação estava desatualizada, que faltavam parâmetros ou que uma função quebrou após um ajuste simples? Na GDForge, queremos evitar essa dor de cabeça a todo custo."
+    },
+    {
+      "type": "paragraph",
+      "text": "Para resolver isso, criamos um contrato formal de receita (recipe.json) e um script validador automatizado (validate_recipe_manifest.gd). Pense nisso como a ficha técnica de um eletrodoméstico que é conferida por um inspetor de qualidade antes de sair da fábrica: o validador inspeciona o código GDScript real na Godot 4.7.2 Stable e checa se todas as propriedades, valores padrão, limites de sliders, sinais e métodos batem com o que foi prometido no manifesto."
+    },
+    {
+      "type": "list",
+      "items": [
+        "Semáforo verde: a suíte rodou e passou em todas as 53 verificações automatizadas da SR-001.",
+        "Documentação que não mente: qualquer discrepância entre o código e o manifesto acende a luz vermelha de falha no console.",
+        "Tranquilidade para criar: o dev sabe exatamente os limites e parâmetros antes mesmo de usar o componente."
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Próximos passos na bancada da forja"
+    },
+    {
+      "type": "paragraph",
+      "text": "Ver a POC Better Jump rodando liso e o Coyote Time validado com 53 testes nos dá a certeza de que estamos no caminho certo. O próximo passo do laboratório é isolar o Jump Buffer como um componente independente no mesmo padrão de contrato rigoroso da SR-001, trazendo a mesma facilidade e segurança para a sua bancada."
+    },
+    {
+      "type": "paragraph",
+      "text": "Se você também adora discutir game feel e quer ver como ferramentas modulares podem tornar o desenvolvimento solo na Godot mais leve e divertido, acompanhe os bastidores da forja!"
+    },
+    {
+      "type": "link",
+      "text": "Conheça mais sobre a proposta do Gameplay Studio",
+      "url": "/gameplay-studio"
+    }
+  ]
+}
