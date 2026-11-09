@@ -1,0 +1,15 @@
+# Raiz do deploy (Hostinger): o site real vive em public/.
+# Tudo que chega aqui é reescrito para public/, entao src/, templates/,
+# content/, docs/, tests/, scripts/ e .git nunca sao servidos por URL.
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+RewriteEngine On
+
+# Acesso direto a /public/... nao e permitido (evita conteudo duplicado).
+RewriteCond %{THE_REQUEST} \s/+public(?:/|\s|\?) [NC]
+RewriteRule ^ - [R=404,L]
+
+# Encaminha o restante para public/ (o .htaccess de public/ cuida das rotas).
+RewriteCond %{REQUEST_URI} !^/public/ [NC]
+RewriteRule ^(.*)$ public/$1 [L]
